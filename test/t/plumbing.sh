@@ -2,7 +2,9 @@
 . ./wvtest.sh
 . ../composure.sh
 
-export COMPOSURE_DIR="$(pwd)/composure_test"
+export XDG_DATA_HOME="$(pwd)/fixture"
+export COMPOSURE_DIR="$XDG_DATA_HOME/composure"
+
 export GIT_AUTHOR_NAME="test user"
 export GIT_AUTHOR_EMAIL="me@privacy.net"
 export GIT_COMMITTER_NAME="test user"
@@ -41,9 +43,6 @@ unset -f ___test_typeset_functions
 
 WVSTART "_longest_function_name_length"
 WVPASS [ $(_longest_function_name_length) -gt 0 ]
-
-# fake out _get_composure_dir
-_get_composure_dir() { echo $COMPOSURE_DIR; }
 
 WVSTART "_get_author_name"
 cd $(_get_composure_dir) && git config --local user.name 'local user' && cd -
