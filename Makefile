@@ -2,6 +2,9 @@
 TARGET = tests
 all: $(TARGET)
 
+runtests:
+	cd test && make runtests
+
 tests:
 	cd test && make tests
 
