@@ -71,6 +71,19 @@ _temp_filename_for ()
   echo $file
 }
 
+_prompt ()
+{
+  typeset prompt="$1"
+  typeset result
+  case "$(_shell)" in
+    bash)
+      read -e -p "$prompt" result;;
+    *)
+      echo -n "$prompt" >&2; read result;;
+  esac
+  echo "$result"
+}
+
 _add_composure_file ()
 {
   typeset func="$1"
@@ -89,8 +102,7 @@ _add_composure_file ()
       cp "$file" "$composure_dir/$func.inc"
       git add --all .
       if [ -z "$comment" ]; then
-        echo -n "Git Comment: "
-        read comment
+        comment="$(_prompt 'Git Comment: ')"
       fi
       git commit -m "$operation $func: $comment"
     fi
@@ -179,10 +191,8 @@ _generate_metadata_functions() {
 }
 
 _list_composure_files () {
-  typeset f
-  for f in $(_get_composure_dir)/*.inc; do
-    echo $f
-  done
+  typeset composure_dir="$(_get_composure_dir)"
+  [ -d "$composure_dir" ] && find "$composure_dir" -maxdepth 1 -name '*.inc'
 }
 
 _load_composed_functions () {
@@ -198,6 +208,14 @@ _load_composed_functions () {
   for inc in $(_list_composure_files); do
     . $inc
   done
+}
+
+_strip_trailing_whitespace () {
+  sed -e 's/ \+$//'
+}
+
+_strip_semicolons () {
+  sed -e 's/;$//'
 }
 
 
@@ -283,7 +301,7 @@ draft ()
   $cmd;
 }"
   typeset file=$(_temp_filename_for draft)
-  typeset -f $func > $file
+  typeset -f $func | _strip_trailing_whitespace | _strip_semicolons > $file
   _transcribe "$func" "$file" Draft "Initial draft"
   rm "$file" 2>/dev/null
   revise $func
@@ -508,4 +526,3 @@ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTIO
 CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 EOF
-
